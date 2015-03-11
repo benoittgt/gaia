@@ -478,10 +478,23 @@ suite('system/NotificationScreen >', function() {
 
       var ringtonePlayer = MockAudio.instances[0];
       sinon.assert.called(ringtonePlayer.play);
-
       sinon.assert.called(navigator.vibrate);
-
       assert.ok(fakeToaster.classList.contains('displayed'));
+
+
+      UpdateManager.addToUpdatesQueue(updatableApps[1]);
+      this.sinon.clock.tick(UpdateManager.NOTIFICATION_BUFFERING_TIMEOUT);
+      this.sinon.clock.tick(UpdateManager.TOASTER_TIMEOUT);
+      var css = UpdateManager.toaster.classList;
+      assert.isFalse(css.contains('displayed'));
+    });
+
+    test('it should stop playing after 4 seconds', function() {
+      var playSpy = this.sinon.spy(MockAudio.prototype, 'play');
+      sendNotification();
+      var mockAudio = MockAudio.instances[0];
+      assert.equal(mockAudio.mozAudioChannelType, 'notification');
+      assert.ok(playSpy.calledOnce);
     });
 
     test('notifications are added in the right place', function() {
